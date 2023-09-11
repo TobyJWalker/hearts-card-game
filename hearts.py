@@ -87,14 +87,45 @@ def create_deck():
     return deck
 
 # deal the deck between 4 players
-def deal_deck(player_1, player_2, player_3, player_4, deck):
+def deal_deck(players, deck):
     
     # loop 13 times, one for each card value
     for i in range(13):
         
         # add a card to each players hand
-        player_1.add_card_to_deck(deck[i])
-        player_2.add_card_to_deck(deck[i+13])
-        player_3.add_card_to_deck(deck[i+26])
-        player_4.add_card_to_deck(deck[i+39])
+        players[0].add_card_to_deck(deck[i])
+        players[1].add_card_to_deck(deck[i+13])
+        players[2].add_card_to_deck(deck[i+26])
+        players[3].add_card_to_deck(deck[i+39])
 
+# find the index of the player with 2 of clubs (this will be lead player on game 1)
+def find_2_clubs(players):
+    index = 0
+
+    # loop through players and return index once 2 of clubs is found
+    for player in players:
+
+        # check to see if any cards are the 2 of clubs
+        if any(card.face == '2C' for card in player.hand):
+            return index
+        
+        # increment index
+        index += 1
+    # retun none if 2 of clubs not found
+    return None
+
+# main function
+def main():
+
+    # create some players and store in a list. 3 of them are bots
+    players = [Player(False), Player(True), Player(True), Player(True)]
+    
+    # create a shuffled deck and deal
+    deck = create_deck()
+    shuffle(deck)
+    deal_deck(players, deck)
+
+    # get the index of the lead player
+    lead_index = find_2_clubs(players)
+
+    
