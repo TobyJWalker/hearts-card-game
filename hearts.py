@@ -1,4 +1,4 @@
-from random import randint, shuffle
+from random import choice, shuffle
 
 # some globals used in validation
 VALID_VALS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
@@ -18,23 +18,23 @@ def welcome():
 # create a card object to hold value and suit
 class Card():
 
-    # initialise the value and suit variables
+    # initialise the value and face variables
     # face variable is used to display the card to the user e.g. 4H = 4 of hearts
     # a queen of spades will have value of 12 and face of QS
     # an ace of diamonds will have a value of 14 and face of AD
-    def __init__(self, value, suit, face):
+    def __init__(self, value, face):
         self.value = value
-        self.suit = suit
         self.face = face
 
 # create a player class which will hold hand information and points etc
 class Player():
 
     # initialise some important variables
-    def __init__(self, is_bot):
+    def __init__(self, name, is_bot):
         self.hand = []
         self.trick_hand = []
         self.points = 0
+        self.name = name
 
         # is_bot determines if prompts are printed to console or choices are generated
         self.is_bot = is_bot
@@ -67,9 +67,20 @@ class Player():
         # return the calculated values
         return total, shot_the_moon
     
-    # add a card to the deck
-    def add_card_to_deck(self, card):
+    # add a card to the hand
+    def add_card_to_hand(self, card):
         self.hand.append(card)
+    
+    # function to remove a card
+    def remove_card_from_hand(self, face):
+        # loop through the players cards and return the chosen one whilst removing it from the hand
+        for card in self.hand:
+            if card.face == face:
+                self.hand.remove(card)
+                return card
+        return None
+
+
 
 # function to create the deck
 def create_deck():
@@ -78,25 +89,25 @@ def create_deck():
     deck = []
 
     # create a variable to hold a dictionary of suits and their symbol
-    suits = {'hearts': 'H', 'clubs': 'C', 'spades': 'S', 'diamonds': 'D'}
+    suits = ['H', 'C', 'S', 'D']
 
     # loop through suits and add all cards to deck
-    for suit in suits.keys():
+    for suit in suits():
         
         # loop through all values
         for i in range(2, 15):
 
             # check for jack, queen, king or ace first
             if i == 11:
-                deck.append(Card(i, suit, f'J{suits[suit]}'))
+                deck.append(Card(i, f'J{suit}'))
             elif i == 12:
-                deck.append(Card(i, suit, f'Q{suits[suit]}'))
+                deck.append(Card(i, f'Q{suit}'))
             elif i == 13:
-                deck.append(Card(i, suit, f'K{suits[suit]}'))
+                deck.append(Card(i, f'K{suit}'))
             elif i == 14:
-                deck.append(Card(i, suit, f'A{suits[suit]}'))
+                deck.append(Card(i, f'A{suit}'))
             else:
-                deck.append(Card(i, suit, f'{i}{suits[suit]}'))
+                deck.append(Card(i, f'{i}{suit}'))
     
     # return the deck
     return deck
@@ -108,10 +119,10 @@ def deal_deck(players, deck):
     for i in range(13):
         
         # add a card to each players hand
-        players[0].add_card_to_deck(deck[i])
-        players[1].add_card_to_deck(deck[i+13])
-        players[2].add_card_to_deck(deck[i+26])
-        players[3].add_card_to_deck(deck[i+39])
+        players[0].add_card_to_hand(deck[i])
+        players[1].add_card_to_hand(deck[i+13])
+        players[2].add_card_to_hand(deck[i+26])
+        players[3].add_card_to_hand(deck[i+39])
 
 # find the index of the player with 2 of clubs (this will be lead player on game 1)
 def find_2_clubs(players):
@@ -144,55 +155,91 @@ def display_hand(player):
     hand = [f'|{card.face}|' for card in player.hand]
     print(f"\nHere is your hand:\n{' '.join(hand)}\n")
 
+# display the trick in a readable way
+def display_trick(trick):
+    # format a string to display
+    trick_str = [f'|{card.face}|' for card in trick]
+    print(f"\nCurrent Trick:\n{' '.join(trick_str)}\n")
+
 # function to validate a card choice, returns True or False
-def is_valid_choice(choice, player, round, lead_suit):
+# heart_broken variable is optional and only used on the first turn of each round to prevent heart being lead with too early
+def is_valid_choice(chosen, player, round, lead_suit, heart_broken=True, show_output=True):
 
     # check if choice exists
-    if choice == '':
+    if chosen == '':
         return False
 
     # choice should only be 2 or 3 characters characters
-    if len(choice) < 2 or len(choice) > 3:
-        input("\nChoice should consist of 2 or 3 characters, a value and suit letter")
+    if len(chosen) < 2 or len(chosen) > 3:
+        if show_output:
+            input("\nChoice should consist of 2 or 3 characters, a value and suit letter")
         return False
     
     # check if a valid value is entered (first character(s))
-    if not any(c == choice[:-1] for c in VALID_VALS):
-        input(f"\n{choice[:-1]} is not a valid value. Values are: 1, 2, 3...J, Q, K, A.")
+    if not any(c == chosen[:-1] for c in VALID_VALS):
+        if show_output:
+            input(f"\n{chosen[:-1]} is not a valid value. Values are: 1, 2, 3...J, Q, K, A.")
         return False
     
     # check if a valid suit is entered (last character)
-    if not any(c == choice[-1] for c in VALID_SUITS):
-        input(f"\n{choice[-1]} is not a valid suit. Suits are: D, S, C, H")
+    if not any(c == chosen[-1] for c in VALID_SUITS):
+        if show_output:
+            input(f"\n{chosen[-1]} is not a valid suit. Suits are: D, S, C, H")
         return False
     
     # check to see if chosen card is not in hand
-    if not any(card.face == choice for card in player.hand):
-        input("\nYou do not have that card.")
+    if not any(card.face == chosen for card in player.hand):
+        if show_output:
+            input("\nYou do not have that card.")
         return False
     
     # check for round 1 rules (no hearts or the queen of spades can be played)
-    if round == 1 and (choice == 'QS' or choice[:-1] == 'H'):
-        input("\nNo hearts or the queen of spades cannot be played on round 1.")
+    if round == 1 and (chosen == 'QS' or chosen[:-1] == 'H'):
+        if show_output:
+            input("\nNo hearts or the queen of spades cannot be played on round 1.")
         return False
     
     # check to see if a card matching the lead suit is available
-    if any(card.face[-1] == choice[-1] for card in player.hand) and choice[-1] != lead_suit:
-        input("\nOne or more cards that follow suit are available, you must play a card which follows suit.")
+    if any(card.face[-1] == chosen[-1] for card in player.hand) and any(c == chosen[-1] for c in lead_suit):
+        if show_output:
+            input("\nOne or more cards that follow suit are available, you must play a card which follows suit.")
         return False
+    
+    # prevent playing a heart if heart_broken is specified as false
+    if chosen[-1] == 'H' and heart_broken:
+        if show_output:
+            input("\nCannot lead with a heart before hearts have been broken.")
+        return False
+    
+    return True
 
-# function to handle a player's turn, returns the resulting trick
-def play_turn(player, round, lead_suit):
+# function to handle a player's turn, returns the card played
+def play_turn(player, round, lead_suit, heart_broken=True):
+    chosen = ''
 
     # check if player is real or a bot
     if not player.is_bot:
 
         # keep asking for a choice until valid
-        while not is_valid_choice(choice, player, round, lead_suit):
+        while not is_valid_choice(chosen, player, round, lead_suit, heart_broken):
 
             # ask player to choose a card, set to upper for case insensitivity
-            choice = input("Enter a card to play: ").upper()
-        
+            chosen = input("Enter a card to play: ").upper()
+    
+    # make a choice for the bot
+    else:
+
+        # keep generating a choice until valid
+        while not is_valid_choice(chosen, player, round, lead_suit, heart_broken, False):
+            chosen = choice(player.hand).face
+    
+    # check if heart_broken was already True or broken this turn
+    if heart_broken or (chosen[-1] == 'H' and not heart_broken):
+        return player.remove_card_from_hand(chosen), True
+    
+    # if hearts were not broken prior to this turn or during this turn
+    else:
+        return player.remove_card_from_hand(chosen, False)
 
 # main function
 def main():
@@ -200,7 +247,7 @@ def main():
     welcome()
 
     # create some players and store in a list. 3 of them are bots
-    players = [Player(False), Player(True), Player(True), Player(True)]
+    players = [Player('You', False), Player('Bot 1', True), Player('Bot 2', True), Player('Bot 3', True)]
 
     # create a rounder counter
     round_num = 1
@@ -216,19 +263,47 @@ def main():
         # another while loop until users deck is empty
         while len(players[0].hand) != 0:
 
-            # calculate the order of play
-            player_order = get_turn_order(lead_index)
+            # create a 'trick' and heart_broken variable
+            current_trick = []
+            heart_broken = False
 
             # display user's hand
             display_hand(players[0])
 
-            # if game 1, different rules apply
+            # check for game 1, and calculate lead player index if so
             if round_num == 1:
-
-                # get the index of the lead player and set lead suit to clubs 
                 lead_index = find_2_clubs(players)
 
-                # check if the user is lead player
-                if lead_index == 0:
-                    # warn user that they go first and must play 2 of clubs
-                    input("You have 2 of clubs so you go first and play it...")
+            # calculate the order of play using lead index
+            player_order = get_turn_order(lead_index)
+
+            # loop through each player to do their turn
+            for current in player_order:
+
+                # check to see if player 1's turn and game 1
+                if round_num == 1 and lead_index == current:
+
+                    # automatically play 2 of clubs for lead player
+                    input(f'\n{players[current].name} played 2 of clubs.')
+                    
+                    for card in players[current].hand:
+                        if card.face == '2C':
+                            current_trick.append(card)
+                            players[current].hand.remove(card)
+                    
+                    # set the lead suit to clubs
+                    lead_suit = 'C'
+                
+                # handle first turn slightly differently to others
+                elif lead_index == current:
+
+                    # play the turn, but check if heart is broken only on this first player
+                    played_card, heart_broken = play_turn(players[current], round_num, 'DHCS', heart_broken)
+
+                    # assign the lead suit
+                    lead_suit = played_card.face[-1]
+                    
+                display_trick(current_trick)
+                
+
+main()
