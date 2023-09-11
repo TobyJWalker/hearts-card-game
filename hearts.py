@@ -86,7 +86,29 @@ class Player():
     def add_trick_cards(self, trick):
         self.trick_hand += trick
 
+    # reset the trick list
+    def reset_trick_hand(self):
+        self.trick_hand = []
+    
+    # get trick heart count
+    def get_trick_heart_count(self):
+        count = 0
 
+        for card in self.trick_hand:
+            if card.suit == 'hearts':
+                count += 1
+        
+        return count
+    
+    # check if trick has queen of spades
+    def has_queen_spades(self):
+        return any(card.face == 'QS' for card in self.trick_hand)
+    
+    # check to see if shot the moon
+    def shot_the_moon(self):
+        if self.has_queen_spades() and self.get_trick_heart_count() == 13:
+            return True
+        return False
 
 # function to create the deck
 def create_deck():
@@ -169,7 +191,7 @@ def display_trick(trick):
 
 # function to validate a card choice, returns True or False
 # heart_broken variable is optional and only used on the first turn of each round to prevent heart being lead with too early
-def is_valid_choice(chosen, player, round, lead_suit, heart_broken=True, show_output=True):
+def is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken=True, show_output=True):
 
     # check if choice exists
     if chosen == '':
@@ -206,13 +228,13 @@ def is_valid_choice(chosen, player, round, lead_suit, heart_broken=True, show_ou
         return False
     
     # check to see if a card matching the lead suit is available
-    if any(card.face[-1] == chosen[-1] for card in player.hand) and chosen[-1] not in lead_suit:
+    if any(card.face[-1] == lead_suit for card in player.hand) and chosen[-1] not in lead_suit:
         if show_output:
             input("\nOne or more cards that follow suit are available, you must play a card which follows suit.")
         return False
     
-    # prevent playing a heart if heart_broken is specified as false
-    if chosen[-1] == 'H' and heart_broken:
+    # prevent playing a heart on first turn if heart_broken is specified as false
+    if chosen[-1] == 'H' and first_play and not heart_broken:
         if show_output:
             input("\nCannot lead with a heart before hearts have been broken.")
         return False
@@ -220,13 +242,13 @@ def is_valid_choice(chosen, player, round, lead_suit, heart_broken=True, show_ou
     return True
 
 # function to handle a player's turn, returns the card played
-def play_turn(player, round, lead_suit, heart_broken=True):
+def play_turn(player, round, lead_suit, heart_broken, first_play):
     chosen = ''
 
     # check if player is real or a bot
     if not player.is_bot:
         # keep asking for a choice until valid
-        while not is_valid_choice(chosen, player, round, lead_suit, heart_broken):
+        while not is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken):
 
             # ask player to choose a card, set to upper for case insensitivity
             chosen = input("Enter a card to play: ").upper()
@@ -234,7 +256,7 @@ def play_turn(player, round, lead_suit, heart_broken=True):
     # make a choice for the bot
     else:
         # keep generating a choice until valid
-        while not is_valid_choice(chosen, player, round, lead_suit, heart_broken, False):
+        while not is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken, False):
             chosen = choice(player.hand).face
     
     # check if heart_broken was already True or broken this turn
@@ -244,6 +266,45 @@ def play_turn(player, round, lead_suit, heart_broken=True):
     # if hearts were not broken prior to this turn or during this turn
     else:
         return player.remove_card_from_hand(chosen), False
+
+# calculate scores at the end of each game
+def calculate_game_scores(players):
+
+    # list of players which need score checked
+    players_to_score = []
+
+    # check if a player 'shot the moon'
+    for player in players:
+        if not player.shot_the_moon():
+            players_to_score.append(player)
+    
+    # check if someone shot the moon by checking player_to_score length
+    if len(players_to_score) == 3:
+        for player in players_to_score:
+            player.points += 26
+    
+    # do normal point calculation if no-one 'shot the moon'
+    else:
+        for player in players:
+            # add a point for each heart in trick
+            player.points += player.get_trick_heart_count()
+
+            # add 13 if queen of spades in trick
+            if player.has_queen_spades():
+                player.points += 13
+            
+            # reset the trick hand for the next game
+            player.reset_trick_hand()
+
+# function to display current game scores
+def display_game_scores(players):
+    input(f'''\n\nHere are the current game scores:
+          
+{players[0].name}: {players[0].points}
+{players[1].name}: {players[1].points}
+{players[2].name}: {players[2].points}
+{players[3].name}: {players[3].points}
+''')
 
 # main function
 def main():
@@ -300,7 +361,7 @@ def main():
                 # handle first turn slightly differently to others
                 elif lead_index == current:
                     # play the turn, but check if heart is broken only on this first player
-                    played_card, heart_broken = play_turn(players[current], round_num, 'DHCS', heart_broken)
+                    played_card, heart_broken = play_turn(players[current], round_num, 'DHCS', heart_broken, True)
 
                     # assign the lead suit and add card to trick
                     lead_suit = played_card.face[-1]
@@ -312,7 +373,7 @@ def main():
                 # play by normal rules for every other play
                 else:
                     # play the turn and add card to trick
-                    played_card, heart_broken = play_turn(players[current], round_num, 'DHCS', heart_broken)
+                    played_card, heart_broken = play_turn(players[current], round_num, lead_suit, heart_broken, True)
                     current_trick.append(played_card)
 
                     # display a message in readable, clear format using VAL_CONVERSION to translate card value to proper format
@@ -339,6 +400,8 @@ def main():
             lead_index = player_order[highest_card_index]
             round_num += 1
 
-                
+        # calculate and display current game scores
+        calculate_game_scores(players)
+        display_game_scores(players)
 
 main()
