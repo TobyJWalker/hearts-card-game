@@ -1,4 +1,4 @@
-from random import randint
+from random import randint, shuffle
 
 # create a card object to hold value and suit
 class Card():
@@ -16,10 +16,13 @@ class Card():
 class Player():
 
     # initialise some important variables
-    def __init__(self):
+    def __init__(self, is_bot):
         self.hand = []
         self.trick_hand = []
         self.points = 0
+
+        # is_bot determines if prompts are printed to console or choices are generated
+        self.is_bot = is_bot
     
     # count the value of the trick hand
     def calculate_trick_value(self):
@@ -48,6 +51,10 @@ class Player():
             
         # return the calculated values
         return total, shot_the_moon
+    
+    # add a card to the deck
+    def add_card_to_deck(self, card):
+        self.hand.append(card)
 
 # function to create the deck
 def create_deck():
@@ -78,3 +85,16 @@ def create_deck():
     
     # return the deck
     return deck
+
+# deal the deck between 4 players
+def deal_deck(player_1, player_2, player_3, player_4, deck):
+    
+    # loop 13 times, one for each card value
+    for i in range(13):
+        
+        # add a card to each players hand
+        player_1.add_card_to_deck(deck[i])
+        player_2.add_card_to_deck(deck[i+13])
+        player_3.add_card_to_deck(deck[i+26])
+        player_4.add_card_to_deck(deck[i+39])
+
