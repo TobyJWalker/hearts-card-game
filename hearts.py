@@ -10,7 +10,7 @@ class Card():
     def __init__(self, value, suit, face):
         self.value = value
         self.suit = suit
-        self.face = ""
+        self.face = face
 
 # create a player class which will hold hand information and points etc
 class Player():
@@ -48,4 +48,33 @@ class Player():
             
         # return the calculated values
         return total, shot_the_moon
-            
+
+# function to create the deck
+def create_deck():
+
+    # create an empty deck
+    deck = []
+
+    # create a variable to hold a dictionary of suits and their symbol
+    suits = {'hearts': 'H', 'clubs': 'C', 'spades': 'S', 'diamonds': 'D'}
+
+    # loop through suits and add all cards to deck
+    for suit in suits.keys():
+        
+        # loop through all values
+        for i in range(2, 15):
+
+            # check for jack, queen, king or ace first
+            if i == 11:
+                deck.append(Card(i, suit, f'J{suits[suit]}'))
+            elif i == 12:
+                deck.append(Card(i, suit, f'Q{suits[suit]}'))
+            elif i == 13:
+                deck.append(Card(i, suit, f'K{suits[suit]}'))
+            elif i == 14:
+                deck.append(Card(i, suit, f'A{suits[suit]}'))
+            else:
+                deck.append(Card(i, suit, f'{i}{suits[suit]}'))
+    
+    # return the deck
+    return deck
