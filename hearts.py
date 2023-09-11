@@ -1,5 +1,20 @@
 from random import randint, shuffle
 
+# some globals used in validation
+VALID_VALS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+VALID_SUITS = ['D', 'H', 'C', 'S']
+
+# welcome message function
+def welcome():
+    input('''\n\nWelcome to Hearts!
+          
+          Rules can be found here: https://playingcarddecks.com/blogs/how-to-play/hearts-game-rules
+          
+          Acknowledge each message (including this one) by pressing Enter key.
+          Some prompts will require you to pick a card, don't forget to pick one!
+          
+          Good luck!\n\n''')
+
 # create a card object to hold value and suit
 class Card():
 
@@ -114,18 +129,106 @@ def find_2_clubs(players):
     # retun none if 2 of clubs not found
     return None
 
+# generate a list of indexes in the turn order of players, starting with the lead player
+def get_turn_order(lead_index):
+    # modulus 4 on lead index and adds to list, then repeats, adding 1 to index each time
+    # a lead index of 2 for example:
+    # 2 % 4 = 2, 3 % 4 = 3, 4 % 4 = 0, 5 % 4 = 1 therefore...
+    # returned list = [2, 3, 0, 1]
+    return [i % 4 for i in range(lead_index, lead_index+4)]
+
+# function to display hand of passed in player
+def display_hand(player):
+
+    # format a string to display
+    hand = [f'|{card.face}|' for card in player.hand]
+    print(f"\nHere is your hand:\n{' '.join(hand)}\n")
+
+# function to validate a card choice, returns True or False
+def is_valid_choice(choice, player, round, lead_suit):
+
+    # check if choice exists
+    if choice == '':
+        return False
+
+    # choice should only be 2 or 3 characters characters
+    if len(choice) < 2 or len(choice) > 3:
+        input("\nChoice should consist of 2 or 3 characters, a value and suit letter")
+        return False
+    
+    # check if a valid value is entered (first character(s))
+    if not any(c == choice[:-1] for c in VALID_VALS):
+        input(f"\n{choice[:-1]} is not a valid value. Values are: 1, 2, 3...J, Q, K, A.")
+        return False
+    
+    # check if a valid suit is entered (last character)
+    if not any(c == choice[-1] for c in VALID_SUITS):
+        input(f"\n{choice[-1]} is not a valid suit. Suits are: D, S, C, H")
+        return False
+    
+    # check to see if chosen card is not in hand
+    if not any(card.face == choice for card in player.hand):
+        input("\nYou do not have that card.")
+        return False
+    
+    # check for round 1 rules (no hearts or the queen of spades can be played)
+    if round == 1 and (choice == 'QS' or choice[:-1] == 'H'):
+        input("\nNo hearts or the queen of spades cannot be played on round 1.")
+        return False
+    
+    # check to see if a card matching the lead suit is available
+    if any(card.face[-1] == choice[-1] for card in player.hand) and choice[-1] != lead_suit:
+        input("\nOne or more cards that follow suit are available, you must play a card which follows suit.")
+        return False
+
+# function to handle a player's turn, returns the resulting trick
+def play_turn(player, round, lead_suit):
+
+    # check if player is real or a bot
+    if not player.is_bot:
+
+        # keep asking for a choice until valid
+        while not is_valid_choice(choice, player, round, lead_suit):
+
+            # ask player to choose a card, set to upper for case insensitivity
+            choice = input("Enter a card to play: ").upper()
+        
+
 # main function
 def main():
 
+    welcome()
+
     # create some players and store in a list. 3 of them are bots
     players = [Player(False), Player(True), Player(True), Player(True)]
-    
-    # create a shuffled deck and deal
-    deck = create_deck()
-    shuffle(deck)
-    deal_deck(players, deck)
 
-    # get the index of the lead player
-    lead_index = find_2_clubs(players)
-
+    # create a rounder counter
+    round_num = 1
     
+    # begin a loop until one player reaches 100 points
+    while not any(player.points == 100 for player in players):
+
+        # create a shuffled deck and deal
+        deck = create_deck()
+        shuffle(deck)
+        deal_deck(players, deck)
+
+        # another while loop until users deck is empty
+        while len(players[0].hand) != 0:
+
+            # calculate the order of play
+            player_order = get_turn_order(lead_index)
+
+            # display user's hand
+            display_hand(players[0])
+
+            # if game 1, different rules apply
+            if round_num == 1:
+
+                # get the index of the lead player and set lead suit to clubs 
+                lead_index = find_2_clubs(players)
+
+                # check if the user is lead player
+                if lead_index == 0:
+                    # warn user that they go first and must play 2 of clubs
+                    input("You have 2 of clubs so you go first and play it...")
