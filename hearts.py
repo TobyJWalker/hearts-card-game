@@ -2,6 +2,7 @@ from random import choice, shuffle
 
 # some globals used in validation
 VALID_VALS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+VAL_CONVERSION = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
 VALID_SUITS = ['D', 'H', 'C', 'S']
 
 # welcome message function
@@ -18,12 +19,13 @@ def welcome():
 # create a card object to hold value and suit
 class Card():
 
-    # initialise the value and face variables
+    # initialise the value and suit variables
     # face variable is used to display the card to the user e.g. 4H = 4 of hearts
     # a queen of spades will have value of 12 and face of QS
     # an ace of diamonds will have a value of 14 and face of AD
-    def __init__(self, value, face):
+    def __init__(self, value, suit, face):
         self.value = value
+        self.suit = suit
         self.face = face
 
 # create a player class which will hold hand information and points etc
@@ -79,6 +81,10 @@ class Player():
                 self.hand.remove(card)
                 return card
         return None
+    
+    # function to add trick cards to list
+    def add_trick_cards(self, trick):
+        self.trick_hand += trick
 
 
 
@@ -89,25 +95,25 @@ def create_deck():
     deck = []
 
     # create a variable to hold a dictionary of suits and their symbol
-    suits = ['H', 'C', 'S', 'D']
+    suits = {'hearts': 'H', 'clubs': 'C', 'spades': 'S', 'diamonds': 'D'}
 
     # loop through suits and add all cards to deck
-    for suit in suits():
+    for suit in suits.keys():
         
         # loop through all values
         for i in range(2, 15):
 
             # check for jack, queen, king or ace first
             if i == 11:
-                deck.append(Card(i, f'J{suit}'))
+                deck.append(Card(i, suit, f'J{suits[suit]}'))
             elif i == 12:
-                deck.append(Card(i, f'Q{suit}'))
+                deck.append(Card(i, suit, f'Q{suits[suit]}'))
             elif i == 13:
-                deck.append(Card(i, f'K{suit}'))
+                deck.append(Card(i, suit, f'K{suits[suit]}'))
             elif i == 14:
-                deck.append(Card(i, f'A{suit}'))
+                deck.append(Card(i, suit, f'A{suits[suit]}'))
             else:
-                deck.append(Card(i, f'{i}{suit}'))
+                deck.append(Card(i, suit, f'{i}{suits[suit]}'))
     
     # return the deck
     return deck
@@ -159,7 +165,7 @@ def display_hand(player):
 def display_trick(trick):
     # format a string to display
     trick_str = [f'|{card.face}|' for card in trick]
-    print(f"\nCurrent Trick:\n{' '.join(trick_str)}\n")
+    input(f"\nCurrent Trick:\n{' '.join(trick_str)}\n")
 
 # function to validate a card choice, returns True or False
 # heart_broken variable is optional and only used on the first turn of each round to prevent heart being lead with too early
@@ -200,7 +206,7 @@ def is_valid_choice(chosen, player, round, lead_suit, heart_broken=True, show_ou
         return False
     
     # check to see if a card matching the lead suit is available
-    if any(card.face[-1] == chosen[-1] for card in player.hand) and any(c == chosen[-1] for c in lead_suit):
+    if any(card.face[-1] == chosen[-1] for card in player.hand) and chosen[-1] not in lead_suit:
         if show_output:
             input("\nOne or more cards that follow suit are available, you must play a card which follows suit.")
         return False
@@ -219,7 +225,6 @@ def play_turn(player, round, lead_suit, heart_broken=True):
 
     # check if player is real or a bot
     if not player.is_bot:
-
         # keep asking for a choice until valid
         while not is_valid_choice(chosen, player, round, lead_suit, heart_broken):
 
@@ -228,7 +233,6 @@ def play_turn(player, round, lead_suit, heart_broken=True):
     
     # make a choice for the bot
     else:
-
         # keep generating a choice until valid
         while not is_valid_choice(chosen, player, round, lead_suit, heart_broken, False):
             chosen = choice(player.hand).face
@@ -239,7 +243,7 @@ def play_turn(player, round, lead_suit, heart_broken=True):
     
     # if hearts were not broken prior to this turn or during this turn
     else:
-        return player.remove_card_from_hand(chosen, False)
+        return player.remove_card_from_hand(chosen), False
 
 # main function
 def main():
@@ -282,9 +286,8 @@ def main():
 
                 # check to see if player 1's turn and game 1
                 if round_num == 1 and lead_index == current:
-
                     # automatically play 2 of clubs for lead player
-                    input(f'\n{players[current].name} played 2 of clubs.')
+                    print(f'\n{players[current].name} played 2 of clubs.')
                     
                     for card in players[current].hand:
                         if card.face == '2C':
@@ -296,14 +299,46 @@ def main():
                 
                 # handle first turn slightly differently to others
                 elif lead_index == current:
-
                     # play the turn, but check if heart is broken only on this first player
                     played_card, heart_broken = play_turn(players[current], round_num, 'DHCS', heart_broken)
 
-                    # assign the lead suit
+                    # assign the lead suit and add card to trick
                     lead_suit = played_card.face[-1]
+                    current_trick.append(played_card)
+
+                    # display a message in readable, clear format using VAL_CONVERSION to translate card value to proper format
+                    print(f"\n{players[current].name} played {VAL_CONVERSION[played_card.value-1]} of {played_card.suit}")
+                
+                # play by normal rules for every other play
+                else:
+                    # play the turn and add card to trick
+                    played_card, heart_broken = play_turn(players[current], round_num, 'DHCS', heart_broken)
+                    current_trick.append(played_card)
+
+                    # display a message in readable, clear format using VAL_CONVERSION to translate card value to proper format
+                    print(f"\n{players[current].name} played {VAL_CONVERSION[played_card.value-1]} of {played_card.suit}")
                     
                 display_trick(current_trick)
+            
+            # calculate which card is the highest value and store the index
+            highest_card_index = 0
+            highest_card_value = 0
+
+            for card in current_trick:
+                if card.face[-1] == lead_suit and card.value > highest_card_value:
+                    highest_card_value = card.value
+                    highest_card_index = current_trick.index(card)
+            
+            # give the trick to the player with the highest value in the lead suit
+            players[player_order[highest_card_index]].add_trick_cards(current_trick)
+
+            # output a message to display who won the trick
+            input(f"\n{players[player_order[highest_card_index]].name} won this trick.\n")
+
+            # set the new lead_index and increment round number
+            lead_index = player_order[highest_card_index]
+            round_num += 1
+
                 
 
 main()
