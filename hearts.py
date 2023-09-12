@@ -9,12 +9,12 @@ VALID_SUITS = ['D', 'H', 'C', 'S']
 def welcome():
     input('''\n\nWelcome to Hearts!
           
-          Rules can be found here: https://playingcarddecks.com/blogs/how-to-play/hearts-game-rules
+Rules can be found here: https://playingcarddecks.com/blogs/how-to-play/hearts-game-rules
           
-          Acknowledge each message (including this one) by pressing Enter key.
-          Some prompts will require you to pick a card, don't forget to pick one!
+Acknowledge each message (including this one) by pressing Enter key.
+Some prompts will require you to pick a card, don't forget to pick one!
           
-          Good luck!\n\n''')
+Good luck!\n\n''')
 
 # create a card object to hold value and suit
 class Card():
@@ -222,7 +222,7 @@ def is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken=T
         return False
     
     # check for round 1 rules (no hearts or the queen of spades can be played)
-    if round == 1 and (chosen == 'QS' or chosen[:-1] == 'H'):
+    if round == 1 and (chosen == 'QS' or chosen[-1] == 'H'):
         if show_output:
             input("\nNo hearts or the queen of spades cannot be played on round 1.")
         return False
@@ -259,13 +259,13 @@ def play_turn(player, round, lead_suit, heart_broken, first_play):
         while not is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken, False):
             chosen = choice(player.hand).face
     
-    # check if heart_broken was already True or broken this turn
-    if heart_broken or (chosen[-1] == 'H' and not heart_broken):
+    # check if heart is broken
+    if chosen[-1] == 'H':
         return player.remove_card_from_hand(chosen), True
     
-    # if hearts were not broken prior to this turn or during this turn
+    # return previous heart_broken value
     else:
-        return player.remove_card_from_hand(chosen), False
+        return player.remove_card_from_hand(chosen), heart_broken
 
 # calculate scores at the end of each game
 def calculate_game_scores(players):
@@ -298,12 +298,14 @@ def calculate_game_scores(players):
 
 # function to display current game scores
 def display_game_scores(players):
-    input(f'''\n\nHere are the current game scores:
+    input(f'''\n\n---------------------------------------------------------
+Here are the current game scores:
           
 {players[0].name}: {players[0].points}
 {players[1].name}: {players[1].points}
 {players[2].name}: {players[2].points}
 {players[3].name}: {players[3].points}
+---------------------------------------------------------
 ''')
 
 # main function
@@ -318,19 +320,21 @@ def main():
     round_num = 1
     
     # begin a loop until one player reaches 100 points
-    while not any(player.points == 100 for player in players):
+    while not any(player.points > 10 for player in players):
 
         # create a shuffled deck and deal
         deck = create_deck()
         shuffle(deck)
         deal_deck(players, deck)
 
+        # set/reset heart_broken variable
+        heart_broken = False
+
         # another while loop until users deck is empty
         while len(players[0].hand) != 0:
 
-            # create a 'trick' and heart_broken variable
+            # create a 'trick' deck
             current_trick = []
-            heart_broken = False
 
             # display user's hand
             display_hand(players[0])
@@ -361,7 +365,7 @@ def main():
                 # handle first turn slightly differently to others
                 elif lead_index == current:
                     # play the turn, but check if heart is broken only on this first player
-                    played_card, heart_broken = play_turn(players[current], round_num, 'DHCS', heart_broken, True)
+                    played_card, _ = play_turn(players[current], round_num, 'DHCS', heart_broken, True)
 
                     # assign the lead suit and add card to trick
                     lead_suit = played_card.face[-1]
@@ -373,7 +377,7 @@ def main():
                 # play by normal rules for every other play
                 else:
                     # play the turn and add card to trick
-                    played_card, heart_broken = play_turn(players[current], round_num, lead_suit, heart_broken, True)
+                    played_card, heart_broken = play_turn(players[current], round_num, lead_suit, heart_broken, False)
                     current_trick.append(played_card)
 
                     # display a message in readable, clear format using VAL_CONVERSION to translate card value to proper format
