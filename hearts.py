@@ -330,7 +330,7 @@ def main():
     round_num = 1
     
     # begin a loop until one player reaches 100 points
-    while not any(player.points > 10 for player in players):
+    while not any(player.points > 50 for player in players):
 
         # create a shuffled deck and deal
         deck = create_deck()
