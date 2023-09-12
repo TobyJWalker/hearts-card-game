@@ -308,6 +308,16 @@ Here are the current game scores:
 ---------------------------------------------------------
 ''')
 
+# find the player with the lowest points
+def get_winners(players):
+    # create a list of points for each player and find the minimum score
+    scores = [player.points for player in players]
+    min_score = min(scores)
+
+    # loop through players and return a list of all players with min_score
+    return [player for player in players if player.points == min_score]
+
+
 # main function
 def main():
 
@@ -407,5 +417,21 @@ def main():
         # calculate and display current game scores
         calculate_game_scores(players)
         display_game_scores(players)
+    
+    # calculate winners
+    winners = get_winners(players)
+
+    # if one winner, print win message
+    if len(winners) == 1:
+        input(f'\n\n{winners[0].name.upper()} IS THE WINNER!\n\n')
+    
+    # if multiple winners, print draw message
+    elif len(winners) > 1:
+        print("\n\nIT'S A DRAW! CONGRATULATIONS:\n")
+        for player in winners:
+            print(f"{player.name.upper()}")
+        print("\n")
+
+
 
 main()
