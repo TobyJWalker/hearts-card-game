@@ -1,4 +1,6 @@
 from random import choice, shuffle
+from Player import Player
+from Card import Card
 
 # some globals used in validation
 VALID_VALS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
@@ -15,68 +17,6 @@ Acknowledge each message (including this one) by pressing Enter key.
 Some prompts will require you to pick a card, don't forget to pick one!
           
 Good luck!\n\n''')
-
-# create a card object to hold value and suit
-class Card():
-    # initialise the value and suit variables
-    # face variable is used to display the card to the user e.g. 4H = 4 of hearts
-    # a queen of spades will have value of 12 and face of QS
-    # an ace of diamonds will have a value of 14 and face of AD
-    def __init__(self, value, suit, face):
-        self.value = value
-        self.suit = suit
-        self.face = face
-
-# create a player class which will hold hand information and points etc
-class Player():
-    # initialise some important variables
-    def __init__(self, name, is_bot):
-        self.hand = []
-        self.trick_hand = []
-        self.points = 0
-        self.name = name
-        self.is_bot = is_bot
-    
-    # add a card to the hand
-    def add_card_to_hand(self, card):
-        self.hand.append(card)
-    
-    # function to remove a card
-    def remove_card_from_hand(self, face):
-        # loop through the players cards and return the chosen one whilst removing it from the hand
-        for card in self.hand:
-            if card.face == face:
-                self.hand.remove(card)
-                return card
-        return None
-    
-    # function to add trick cards to list
-    def add_trick_cards(self, trick):
-        self.trick_hand += trick
-
-    # reset the trick list
-    def reset_trick_hand(self):
-        self.trick_hand = []
-    
-    # get trick heart count
-    def get_trick_heart_count(self):
-        count = 0
-
-        for card in self.trick_hand:
-            if card.suit == 'hearts':
-                count += 1
-        
-        return count
-    
-    # check if trick has queen of spades
-    def has_queen_spades(self):
-        return any(card.face == 'QS' for card in self.trick_hand)
-    
-    # check to see if shot the moon
-    def shot_the_moon(self):
-        if self.has_queen_spades() and self.get_trick_heart_count() == 13:
-            return True
-        return False
 
 # function to create the deck
 def create_deck():
@@ -217,7 +157,6 @@ def play_turn(player, round, lead_suit, heart_broken, first_play):
     if not player.is_bot:
         # keep asking for a choice until valid
         while not is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken):
-
             # ask player to choose a card, set to upper for case insensitivity
             chosen = input("Enter a card to play: ").upper()
     
