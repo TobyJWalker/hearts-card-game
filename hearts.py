@@ -18,7 +18,6 @@ Good luck!\n\n''')
 
 # create a card object to hold value and suit
 class Card():
-
     # initialise the value and suit variables
     # face variable is used to display the card to the user e.g. 4H = 4 of hearts
     # a queen of spades will have value of 12 and face of QS
@@ -30,44 +29,13 @@ class Card():
 
 # create a player class which will hold hand information and points etc
 class Player():
-
     # initialise some important variables
     def __init__(self, name, is_bot):
         self.hand = []
         self.trick_hand = []
         self.points = 0
         self.name = name
-
-        # is_bot determines if prompts are printed to console or choices are generated
         self.is_bot = is_bot
-    
-    # count the value of the trick hand
-    def calculate_trick_value(self):
-        
-        # running total of points
-        total = 0
-
-        # bool value to check if player "shot the moon"
-        shot_the_moon = False
-
-        # loop through trick hand
-        for card in self.trick_hand:
-
-            # if card is a hearts, add 1 point
-            if card.suit == 'hearts':
-                total += 1
-            
-            # if card is a queen of spades, add 13 points
-            if card.face == 'QS':
-                total += 13
-            
-        # check if player shot the moon (got all hearts and queen of spades)
-        if total == 26:
-            total = 0
-            shot_the_moon = True
-            
-        # return the calculated values
-        return total, shot_the_moon
     
     # add a card to the hand
     def add_card_to_hand(self, card):
@@ -270,15 +238,10 @@ def play_turn(player, round, lead_suit, heart_broken, first_play):
 # calculate scores at the end of each game
 def calculate_game_scores(players):
 
-    # list of players which need score checked
-    players_to_score = []
-
-    # check if a player 'shot the moon'
-    for player in players:
-        if not player.shot_the_moon():
-            players_to_score.append(player)
+    # list of players which need score checked. Someone who 'shot the moon' does not need to be checked as they won't get any points
+    players_to_score = [player for player in players if not player.shot_the_moon()]
     
-    # check if someone shot the moon by checking player_to_score length
+    # check if someone shot the moon by checking player_to_score length (only 1 person can shoot the moon)
     if len(players_to_score) == 3:
         for player in players_to_score:
             player.points += 26
@@ -298,9 +261,10 @@ def calculate_game_scores(players):
 
 # function to display current game scores
 def display_game_scores(players):
-    input(f'''\n\n---------------------------------------------------------
+    input(f'''\n
+---------------------------------------------------------
 Here are the current game scores:
-          
+
 {players[0].name}: {players[0].points}
 {players[1].name}: {players[1].points}
 {players[2].name}: {players[2].points}
@@ -311,16 +275,14 @@ Here are the current game scores:
 # find the player with the lowest points
 def get_winners(players):
     # create a list of points for each player and find the minimum score
-    scores = [player.points for player in players]
-    min_score = min(scores)
+    min_score = min([player.points for player in players])
 
     # loop through players and return a list of all players with min_score
     return [player for player in players if player.points == min_score]
 
 
-# main function
+# main game function
 def main():
-
     welcome()
 
     # create some players and store in a list. 3 of them are bots
@@ -349,7 +311,7 @@ def main():
             # display user's hand
             display_hand(players[0])
 
-            # check for game 1, and calculate lead player index if so
+            # check for game 1, and calculate lead player index if so (player with 2 of clubs goes first)
             if round_num == 1:
                 lead_index = find_2_clubs(players)
 
@@ -426,7 +388,7 @@ def main():
 
     # if one winner, print win message
     if len(winners) == 1:
-        input(f'\n\n{winners[0].name.upper()} IS THE WINNER!\n\n')
+        input(f'\n\n{winners[0].name.upper()} WON!\n\n')
     
     # if multiple winners, print draw message
     elif len(winners) > 1:
