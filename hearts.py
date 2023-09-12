@@ -200,43 +200,43 @@ def is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken=T
     # choice should only be 2 or 3 characters characters
     if len(chosen) < 2 or len(chosen) > 3:
         if show_output:
-            input("\nChoice should consist of 2 or 3 characters, a value and suit letter")
+            print("\nChoice should consist of 2 or 3 characters, a value and suit letter")
         return False
     
     # check if a valid value is entered (first character(s))
     if not any(c == chosen[:-1] for c in VALID_VALS):
         if show_output:
-            input(f"\n{chosen[:-1]} is not a valid value. Values are: 1, 2, 3...J, Q, K, A.")
+            print(f"\n{chosen[:-1]} is not a valid value. Values are: 1, 2, 3...J, Q, K, A.")
         return False
     
     # check if a valid suit is entered (last character)
     if not any(c == chosen[-1] for c in VALID_SUITS):
         if show_output:
-            input(f"\n{chosen[-1]} is not a valid suit. Suits are: D, S, C, H")
+            print(f"\n{chosen[-1]} is not a valid suit. Suits are: D, S, C, H")
         return False
     
     # check to see if chosen card is not in hand
     if not any(card.face == chosen for card in player.hand):
         if show_output:
-            input("\nYou do not have that card.")
+            print("\nYou do not have that card.")
         return False
     
     # check for round 1 rules (no hearts or the queen of spades can be played)
     if round == 1 and (chosen == 'QS' or chosen[-1] == 'H'):
         if show_output:
-            input("\nNo hearts or the queen of spades cannot be played on round 1.")
+            print("\nNo hearts or the queen of spades cannot be played on round 1.")
         return False
     
     # check to see if a card matching the lead suit is available
     if any(card.face[-1] == lead_suit for card in player.hand) and chosen[-1] not in lead_suit:
         if show_output:
-            input("\nOne or more cards that follow suit are available, you must play a card which follows suit.")
+            print("\nOne or more cards that follow suit are available, you must play a card which follows suit.")
         return False
     
     # prevent playing a heart on first turn if heart_broken is specified as false
     if chosen[-1] == 'H' and first_play and not heart_broken:
         if show_output:
-            input("\nCannot lead with a heart before hearts have been broken.")
+            print("\nCannot lead with a heart before hearts have been broken.")
         return False
     
     return True
@@ -409,6 +409,9 @@ def main():
 
             # output a message to display who won the trick
             input(f"\n{players[player_order[highest_card_index]].name} won this trick.\n")
+
+            # add a separator to make it clearer where the current trick starts
+            print("\n-----------------------------\n")
 
             # set the new lead_index and increment round number
             lead_index = player_order[highest_card_index]
