@@ -3,24 +3,25 @@ from Player import Player
 from Card import Card
 
 # some globals used in validation
-VALID_VALS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
-VAL_CONVERSION = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
+VAL_CONVERSION = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
+VALID_VALS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 VALID_SUITS = ['D', 'H', 'C', 'S']
 
 # welcome message function
 def welcome():
     input('''\n\nWelcome to Hearts!
-          
+
 Rules can be found here: https://playingcarddecks.com/blogs/how-to-play/hearts-game-rules
-          
+
+You will be playing against 3 other bots.
+
 Acknowledge each message (including this one) by pressing Enter key.
 Some prompts will require you to pick a card, don't forget to pick one!
-          
+
 Good luck!\n\n''')
 
 # function to create the deck
 def create_deck():
-
     # create an empty deck
     deck = []
 
@@ -30,22 +31,9 @@ def create_deck():
     # loop through suits and add all cards to deck
     for suit in suits.keys():
         
-        # loop through all values
+        # loop through all values and add each suit to the deck
         for i in range(2, 15):
-
-            # check for jack, queen, king or ace first
-            if i == 11:
-                deck.append(Card(i, suit, f'J{suits[suit]}'))
-            elif i == 12:
-                deck.append(Card(i, suit, f'Q{suits[suit]}'))
-            elif i == 13:
-                deck.append(Card(i, suit, f'K{suits[suit]}'))
-            elif i == 14:
-                deck.append(Card(i, suit, f'A{suits[suit]}'))
-            else:
-                deck.append(Card(i, suit, f'{i}{suits[suit]}'))
-    
-    # return the deck
+            deck.append(Card(i, suit, f'{VALID_VALS[i-2]}{suits[suit]}'))
     return deck
 
 # deal the deck between 4 players
@@ -283,7 +271,7 @@ def main():
                     current_trick.append(played_card)
 
                     # display a message in readable, clear format using VAL_CONVERSION to translate card value to proper format
-                    print(f"\n{players[current].name} played {VAL_CONVERSION[played_card.value-1]} of {played_card.suit}")
+                    print(f"\n{players[current].name} played {VAL_CONVERSION[played_card.value-2]} of {played_card.suit}")
                 
                 # play by normal rules for every other play
                 else:
@@ -292,7 +280,7 @@ def main():
                     current_trick.append(played_card)
 
                     # display a message in readable, clear format using VAL_CONVERSION to translate card value to proper format
-                    print(f"\n{players[current].name} played {VAL_CONVERSION[played_card.value-1]} of {played_card.suit}")
+                    print(f"\n{players[current].name} played {VAL_CONVERSION[played_card.value-2]} of {played_card.suit}")
                     
                 display_trick(current_trick)
             
