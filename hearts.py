@@ -2,6 +2,7 @@ from random import choice, shuffle
 from Player import Player
 from Card import Card
 import os
+import time
 
 # some globals used in validation
 VAL_CONVERSION = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
@@ -80,18 +81,11 @@ def get_turn_order(lead_index):
 def display_cards(cards):
     display_string = ''
 
-# function to display hand of passed in player
-def display_hand(player):
-
-    # format a string to display
-    hand = [f'|{card.face}|' for card in player.hand]
-    print(f"\nHere is your hand:\n{' '.join(hand)}\n")
-
 # display the trick in a readable way
 def display_trick(trick):
     # format a string to display
     trick_str = [f'|{card.face}|' for card in trick]
-    input(f"\nCurrent Trick:\n{' '.join(trick_str)}\n")
+    print(f"\nCurrent Trick:\n{' '.join(trick_str)}\n")
 
 # function to validate a card choice, returns True or False
 # heart_broken variable is optional and only used on the first turn of each round to prevent heart being lead with too early
@@ -223,6 +217,7 @@ def get_winners(players):
 # main game function
 def main():
     welcome()
+    clear()
 
     # create some players and store in a list. 3 of them are bots
     players = [Player('You', False), Player('Bot 1', True), Player('Bot 2', True), Player('Bot 3', True)]
@@ -247,9 +242,6 @@ def main():
             # create a 'trick' deck
             current_trick = []
 
-            # display user's hand
-            players[0].display_hand()
-
             # check for game 1, and calculate lead player index if so (player with 2 of clubs goes first)
             if round_num == 1:
                 lead_index = find_2_clubs(players)
@@ -259,6 +251,9 @@ def main():
 
             # loop through each player to do their turn
             for current in player_order:
+                # display users hand and if hearts have been broken
+                players[0].display_hand()
+                print(f"Hearts Broken: {heart_broken}")
 
                 # check to see if player 1's turn and game 1
                 if round_num == 1 and lead_index == current:
@@ -283,6 +278,7 @@ def main():
                     current_trick.append(played_card)
 
                     # display a message in readable, clear format using VAL_CONVERSION to translate card value to proper format
+                    clear()
                     print(f"\n{players[current].name} played {VAL_CONVERSION[played_card.value-2]} of {played_card.suit}")
                 
                 # play by normal rules for every other play
@@ -292,9 +288,11 @@ def main():
                     current_trick.append(played_card)
 
                     # display a message in readable, clear format using VAL_CONVERSION to translate card value to proper format
+                    clear()
                     print(f"\n{players[current].name} played {VAL_CONVERSION[played_card.value-2]} of {played_card.suit}")
                     
                 display_trick(current_trick)
+                time.sleep(3)
             
             # calculate which card is the highest value and store the index
             highest_card_index = 0
@@ -309,10 +307,9 @@ def main():
             players[player_order[highest_card_index]].add_trick_cards(current_trick)
 
             # output a message to display who won the trick
-            input(f"\n{players[player_order[highest_card_index]].name} won this trick.\n")
+            input(f"\n{players[player_order[highest_card_index]].name} won this trick. (Enter to continue)\n")
 
-            # add a separator to make it clearer where the current trick starts
-            print("\n-----------------------------\n")
+            clear()
 
             # set the new lead_index and increment round number
             lead_index = player_order[highest_card_index]
