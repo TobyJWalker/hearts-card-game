@@ -36,7 +36,7 @@ def create_deck():
     # loop through suits and add all cards to deck
     for suit in suits.keys():
         
-        # loop through all values and add each suit to the deck
+        # loop through all card values and add each suit to the deck
         for i in range(2, 15):
             deck.append(Card(i, suit, f'{VALID_VALS[i-2]}{suits[suit]}'))
     return deck
@@ -44,7 +44,7 @@ def create_deck():
 # check a players hand to make sure they don't have all hearts and/or queen of spades in their hand
 def validate_hands(players):
     hands_valid = True
-    # loop throgh players and check their hands
+    # loop through players and check their hands
     for player in players:
         if not any(card.suit != 'hearts' and card.face != 'QS' for card in player.hand) or len(player.hand) == 0:
             player.display_hand()
@@ -105,7 +105,7 @@ def display_trick(trick, trick_players):
     print('')
     # loop through trick cards and print with the person who played that card
     for player in enumerate(trick_players):
-        print(f"{player[1]}: {VAL_CONVERSION[trick[player[0]].value - 2]} of {trick[player[0]].suit}")
+        print(f"{player[1]}{' '*(6-len(player[1]))}: {VAL_CONVERSION[trick[player[0]].value - 2]} of {trick[player[0]].suit}")
     print('')
 
 # function to validate a card choice, returns True or False

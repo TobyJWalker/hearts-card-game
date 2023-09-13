@@ -45,7 +45,7 @@ class Player():
     
     # check if any of the trick cards is a queen of spades
     def has_queen_spades(self):
-        return any(card.size == 'QS' for card in self.hand)
+        return any(card.face == 'QS' for card in self.trick_hand)
     
     # check to see if shot to moon
     def shot_the_moon(self):
@@ -56,7 +56,7 @@ class Player():
         print("\nHere is your hand:\n")
 
         for card in self.hand:
-            print(f"{card.face}: {VAL_CONVERSION[card.value - 2]} of {card.suit}")
+            print(f"{card.face}{' '*(4-len(card.face))}: {VAL_CONVERSION[card.value - 2]} of {card.suit}")
         
         print("")
     
