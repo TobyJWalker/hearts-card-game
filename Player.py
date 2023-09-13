@@ -1,5 +1,7 @@
 from Card import Card
 
+VAL_CONVERSION = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
+
 # create a player class which will hold hand information and points etc
 class Player():
     # initialise some important variables
@@ -48,3 +50,12 @@ class Player():
     # check to see if shot to moon
     def shot_the_moon(self):
         return self.has_queen_hearts() and (self.get_trick_heart_count() == 13)
+    
+    # display the users hand
+    def display_hand(self):
+        print("\nHere id your hand:/n")
+
+        for card in self.hand:
+            print(f"{card.face}: {VAL_CONVERSION[card.value - 2]} of {card.suit}")
+        
+        print("")

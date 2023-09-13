@@ -1,11 +1,15 @@
 from random import choice, shuffle
 from Player import Player
 from Card import Card
+import os
 
 # some globals used in validation
 VAL_CONVERSION = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
 VALID_VALS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 VALID_SUITS = ['D', 'H', 'C', 'S']
+
+# clear function to clear terminal
+clear = lambda: os.system("clear")
 
 # welcome message function
 def welcome():
@@ -71,6 +75,10 @@ def get_turn_order(lead_index):
     # 2 % 4 = 2, 3 % 4 = 3, 4 % 4 = 0, 5 % 4 = 1 therefore...
     # returned list = [2, 3, 0, 1]
     return [i % 4 for i in range(lead_index, lead_index+4)]
+
+# generic function to display a list of cards in large format
+def display_cards(cards):
+    display_string = ''
 
 # function to display hand of passed in player
 def display_hand(player):
@@ -188,6 +196,7 @@ def calculate_game_scores(players):
 
 # function to display current game scores
 def display_game_scores(players):
+    clear
     input(f'''\n
 ---------------------------------------------------------
 Here are the current game scores:
@@ -196,8 +205,11 @@ Here are the current game scores:
 {players[1].name}: {players[1].points}
 {players[2].name}: {players[2].points}
 {players[3].name}: {players[3].points}
+
+Press Enter to continue.
 ---------------------------------------------------------
 ''')
+    clear
 
 # find the player with the lowest points
 def get_winners(players):
@@ -236,7 +248,7 @@ def main():
             current_trick = []
 
             # display user's hand
-            display_hand(players[0])
+            players[0].display_hand()
 
             # check for game 1, and calculate lead player index if so (player with 2 of clubs goes first)
             if round_num == 1:
