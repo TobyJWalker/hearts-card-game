@@ -96,15 +96,13 @@ def get_turn_order(lead_index):
     # returned list = [2, 3, 0, 1]
     return [i % 4 for i in range(lead_index, lead_index+4)]
 
-# generic function to display a list of cards in large format
-def display_cards(cards):
-    display_string = ''
-
 # display the trick in a readable way
-def display_trick(trick):
-    # format a string to display
-    trick_str = [f'|{card.face}|' for card in trick]
-    print(f"\nCurrent Trick:\n{' '.join(trick_str)}\n")
+def display_trick(trick, trick_players):
+    print('')
+    # loop through trick cards and print with the person who played that card
+    for player in enumerate(trick_players):
+        print(f"{player[1]}: {VAL_CONVERSION[trick[player[0]].value - 2]} of {trick[player[0]].suit}")
+    print('')
 
 # function to validate a card choice, returns True or False
 # heart_broken variable is optional and only used on the first turn of each round to prevent heart being lead with too early
@@ -255,8 +253,9 @@ def main():
         # another while loop until users deck is empty
         while len(players[0].hand) != 0:
 
-            # create a 'trick' deck
+            # create a 'trick' deck and list of people who played that card
             current_trick = []
+            trick_players = []
 
             # check for game 1, and calculate lead player index if so (player with 2 of clubs goes first)
             if round_num == 1:
@@ -274,11 +273,11 @@ def main():
                 # check to see if player 1's turn and game 1
                 if round_num == 1 and lead_index == current:
                     # automatically play 2 of clubs for lead player
-                    print(f'\n{players[current].name} played 2 of clubs.')
                     
                     for card in players[current].hand:
                         if card.face == '2C':
                             current_trick.append(card)
+                            trick_players.append(players[current].name)
                             players[current].hand.remove(card)
                     
                     # set the lead suit to clubs
@@ -292,22 +291,22 @@ def main():
                     # assign the lead suit and add card to trick
                     lead_suit = played_card.face[-1]
                     current_trick.append(played_card)
+                    trick_players.append(players[current].name)
 
                     # display a message in readable, clear format using VAL_CONVERSION to translate card value to proper format
                     clear()
-                    print(f"\n{players[current].name} played {VAL_CONVERSION[played_card.value-2]} of {played_card.suit}")
                 
                 # play by normal rules for every other play
                 else:
                     # play the turn and add card to trick
                     played_card, heart_broken = play_turn(players[current], round_num, lead_suit, heart_broken, False)
                     current_trick.append(played_card)
+                    trick_players.append(players[current].name)
 
                     # display a message in readable, clear format using VAL_CONVERSION to translate card value to proper format
                     clear()
-                    print(f"\n{players[current].name} played {VAL_CONVERSION[played_card.value-2]} of {played_card.suit}")
                     
-                display_trick(current_trick)
+                display_trick(current_trick, trick_players)
                 time.sleep(3)
             
             # calculate which card is the highest value and store the index
