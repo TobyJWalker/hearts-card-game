@@ -40,3 +40,11 @@ class Player():
                 count += 1
         
         return count
+    
+    # check if any of the trick cards is a queen of spades
+    def has_queen_hearts(self):
+        return any(card.size == 'QS' for card in self.hand)
+    
+    # check to see if shot to moon
+    def shot_the_moon(self):
+        return self.has_queen_hearts() and (self.get_trick_heart_count() == 13)
