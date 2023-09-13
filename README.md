@@ -4,3 +4,5 @@ Rules can be found here: https://playingcarddecks.com/blogs/how-to-play/hearts-g
 
 Currenty the bots run off of random generation, AI to make wiser choices 
 could be added later on.
+
+Run 'hearts.py' to play!
