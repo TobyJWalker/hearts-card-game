@@ -71,6 +71,10 @@ def deal_deck(players, deck):
             players[1].add_card_to_hand(deck[i+13])
             players[2].add_card_to_hand(deck[i+26])
             players[3].add_card_to_hand(deck[i+39])
+    
+    # loop through player hands and sort them by value
+    for player in players:
+        player.hand.sort(reverse=True, key=lambda card: (card.suit, card.value))
 
 # find the index of the player with 2 of clubs (this will be lead player on game 1)
 def find_2_clubs(players):

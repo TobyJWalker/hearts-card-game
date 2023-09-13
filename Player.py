@@ -63,4 +63,3 @@ class Player():
     # clear the users hand
     def clear_hand(self):
         self.hand.clear()
-        print(f'{self.name}: {self.hand}')
