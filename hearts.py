@@ -221,9 +221,6 @@ def main():
 
     # create some players and store in a list. 3 of them are bots
     players = [Player('You', False), Player('Bot 1', True), Player('Bot 2', True), Player('Bot 3', True)]
-
-    # create a rounder counter
-    round_num = 1
     
     # begin a loop until one player reaches 100 points
     while not any(player.points > 50 for player in players):
@@ -233,8 +230,9 @@ def main():
         shuffle(deck)
         deal_deck(players, deck)
 
-        # set/reset heart_broken variable
+        # set/reset heart_broken variable and round_num
         heart_broken = False
+        round_num = 1
 
         # another while loop until users deck is empty
         while len(players[0].hand) != 0:
