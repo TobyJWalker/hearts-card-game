@@ -41,17 +41,36 @@ def create_deck():
             deck.append(Card(i, suit, f'{VALID_VALS[i-2]}{suits[suit]}'))
     return deck
 
+# check a players hand to make sure they don't have all hearts and/or queen of spades in their hand
+def validate_hands(players):
+    hands_valid = True
+    # loop throgh players and check their hands
+    for player in players:
+        if not any(card.suit != 'hearts' and card.face != 'QS' for card in player.hand) or len(player.hand) == 0:
+            player.display_hand()
+            hands_valid = False
+            break
+    # clear everyones hand for re-deal if any are invalid
+    if not hands_valid:
+        for player in players:
+            player.clear_hand()
+
+    return hands_valid
+
 # deal the deck between 4 players
 def deal_deck(players, deck):
-    
-    # loop 13 times, one for each card value
-    for i in range(13):
-        
-        # add a card to each players hand
-        players[0].add_card_to_hand(deck[i])
-        players[1].add_card_to_hand(deck[i+13])
-        players[2].add_card_to_hand(deck[i+26])
-        players[3].add_card_to_hand(deck[i+39])
+    # include validation check
+    while not validate_hands(players):
+        # shuffle the deck
+        shuffle(deck)
+
+        # loop 13 times, one for each card value
+        for i in range(13):
+            # add a card to each players hand
+            players[0].add_card_to_hand(deck[i])
+            players[1].add_card_to_hand(deck[i+13])
+            players[2].add_card_to_hand(deck[i+26])
+            players[3].add_card_to_hand(deck[i+39])
 
 # find the index of the player with 2 of clubs (this will be lead player on game 1)
 def find_2_clubs(players):
@@ -225,9 +244,8 @@ def main():
     # begin a loop until one player reaches 100 points
     while not any(player.points > 50 for player in players):
 
-        # create a shuffled deck and deal
+        # create a shuffled deck and deal until everyone's hands are valid
         deck = create_deck()
-        shuffle(deck)
         deal_deck(players, deck)
 
         # set/reset heart_broken variable and round_num
