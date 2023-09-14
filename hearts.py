@@ -135,6 +135,10 @@ def display_trick(trick, trick_players):
 # heart_broken variable is optional and only used on the first turn of each round to prevent heart being lead with too early
 def is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken=True, show_output=True):
 
+    # check if a command has been entered first
+    if chosen[:2] == '--':
+        return chosen
+    
     # check if choice exists
     if chosen == '':
         return False
@@ -183,14 +187,84 @@ def is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken=T
     
     return True
 
+# function to display current game scores
+def display_game_scores(players):
+    clear
+    input(f'''\n
+---------------------------------------------------------
+Here are the current game scores:
+
+{players[0].name}: {players[0].points}
+{players[1].name}: {players[1].points}
+{players[2].name}: {players[2].points}
+{players[3].name}: {players[3].points}
+
+Press Enter to continue.
+---------------------------------------------------------
+''')
+    clear
+
+# run a specified command
+def run_command(cmd, players):
+
+    # help command
+    if cmd == '--help':
+        input('''
+Available commands are:
+
+--tricks      : Displays a list of players and how many tricks they have taken
+--scores      : Displays a leaderboard of the current scores
+--hand        : Displays your hand
+--shootthemoon: Adds all hearts and queen of spades to trick hand (Debugging)
+
+Press Enter to continue.
+''')
+    
+    # scores command
+    elif cmd == '--scores':
+        display_game_scores(players)
+    
+    # tricks command
+    elif cmd == '--tricks':
+        input(f'''\n
+Here's the current trick distribution:
+
+{players[0].name}{' ' * (4 - len(players[0].name))}: {players[0].get_trick_count()})
+{players[1].name}{' ' * (4 - len(players[1].name))}: {players[1].get_trick_count()})
+{players[2].name}{' ' * (4 - len(players[2].name))}: {players[2].get_trick_count()})
+{players[3].name}{' ' * (4 - len(players[3].name))}: {players[3].get_trick_count()})
+
+Press Enter to continue.\n''')
+    
+    # hand command
+    elif cmd == '--hand':
+        for player in players:
+            if not player.is_bot:
+                player.display_hand()
+    
+    # shootthemoon command
+    elif cmd == '--shootthemoon':
+        for player in players:
+            if not player.is_bot:
+                for i in range(2, 15):
+                    player.trick_hand.append(Card(i, 'hearts', f'{VALID_VALS[i-2]}H'))
+                player.trick_hand.append(Card(12, 'spades', 'QS'))
+    
+    else:
+        print('\nCommand not found.\n')
+
 # function to handle a player's turn, returns the card played
-def play_turn(player, round, lead_suit, heart_broken, first_play, trick):
+def play_turn(player, players, round, lead_suit, heart_broken, first_play, trick):
     chosen = ''
 
     # check if player is real or a bot
     if not player.is_bot:
         # keep asking for a choice until valid
-        while not is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken):
+        while is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken) == False or chosen[:2] == '--':
+            # handle if a command has been entered
+            if chosen[:2] == '--':
+                run_command(chosen.lower(), players)
+
             # ask player to choose a card, set to upper for case insensitivity
             chosen = input("Enter a card to play: ").upper()
     
@@ -231,23 +305,6 @@ def calculate_game_scores(players):
             # reset the trick hand for the next game
             player.reset_trick_hand()
 
-# function to display current game scores
-def display_game_scores(players):
-    clear
-    input(f'''\n
----------------------------------------------------------
-Here are the current game scores:
-
-{players[0].name}: {players[0].points}
-{players[1].name}: {players[1].points}
-{players[2].name}: {players[2].points}
-{players[3].name}: {players[3].points}
-
-Press Enter to continue.
----------------------------------------------------------
-''')
-    clear
-
 # find the player with the lowest points
 def get_winners(players):
     # create a list of points for each player and find the minimum score
@@ -270,7 +327,7 @@ def main():
     clear()
     
     # begin a loop until one player reaches 100 points
-    while not any(player.points > 50 for player in players):
+    while not any(player.points >= 50 for player in players):
 
         # create a shuffled deck and deal until everyone's hands are valid
         deck = create_deck()
@@ -316,7 +373,7 @@ def main():
                 # handle first turn slightly differently to others
                 elif lead_index == current:
                     # play the turn, but check if heart is broken only on this first player
-                    played_card, _ = play_turn(players[current], round_num, 'DHCS', heart_broken, True, current_trick)
+                    played_card, _ = play_turn(players[current], players, round_num, 'DHCS', heart_broken, True, current_trick)
 
                     # assign the lead suit and add card to trick
                     lead_suit = played_card.face[-1]
@@ -329,7 +386,7 @@ def main():
                 # play by normal rules for every other play
                 else:
                     # play the turn and add card to trick
-                    played_card, heart_broken = play_turn(players[current], round_num, lead_suit, heart_broken, False, current_trick)
+                    played_card, heart_broken = play_turn(players[current], players, round_num, lead_suit, heart_broken, False, current_trick)
                     current_trick.append(played_card)
                     trick_players.append(players[current].name)
 

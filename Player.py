@@ -50,7 +50,7 @@ class Player():
     
     # check to see if shot to moon
     def shot_the_moon(self):
-        return self.has_queen_spades() and (self.get_trick_heart_count() == 13)
+        return self.has_queen_spades() and (self.get_trick_heart_count() >= 13)
     
     # display the users hand
     def display_hand(self):
@@ -59,7 +59,9 @@ class Player():
         for card in self.hand:
             print(f"{card.face}{' '*(4-len(card.face))}: {VAL_CONVERSION[card.value - 2]} of {card.suit}")
         
-        print("")
+        print('''
+Type --help for a list of commands
+''')
     
     # clear the users hand
     def clear_hand(self):
@@ -68,3 +70,6 @@ class Player():
     # set a bots difficulty
     def set_difficulty(self, difficulty):
         self.difficulty = difficulty
+    
+    def get_trick_count(self):
+        return len(self.trick_hand) / 4
