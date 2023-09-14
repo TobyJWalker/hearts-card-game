@@ -25,6 +25,27 @@ Some prompts will require you to pick a card, don't forget to pick one!
 
 Good luck!\n\n''')
 
+# ask the user for difficulty and set each bot to the chosen difficulty level
+def select_difficulty(players):
+    # initialise difficulty as a negative number as 0 will be min difficulty
+    difficulty = -1
+
+    # keep asking user for a valid difficulty until one is entered
+    while difficulty not in range(2):
+        try:
+            difficulty = int(input('''Here are available difficulty options:
+
+0. Random
+1. Basic
+
+Enter your choice here: '''))
+        except:
+            print("\nDifficulty entered must be a number.\n")
+    
+    # loop through players and assign the chosen difficulty
+    for player in players:
+        player.set_difficulty(difficulty)
+
 # function to create the deck
 def create_deck():
     # create an empty deck
@@ -242,6 +263,10 @@ def main():
 
     # create some players and store in a list. 3 of them are bots
     players = [Player('You', False), Player('Bot 1', True), Player('Bot 2', True), Player('Bot 3', True)]
+
+    # configure difficulty of bots
+    select_difficulty(players)
+    clear()
     
     # begin a loop until one player reaches 100 points
     while not any(player.points > 50 for player in players):

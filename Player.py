@@ -11,6 +11,7 @@ class Player():
         self.points = 0
         self.name = name
         self.is_bot = is_bot
+        self.difficulty = 0
     
     # add a card to the hand
     def add_card_to_hand(self, card):
@@ -63,3 +64,7 @@ class Player():
     # clear the users hand
     def clear_hand(self):
         self.hand.clear()
+    
+    # set a bots difficulty
+    def set_difficulty(self, difficulty):
+        self.difficulty = difficulty
