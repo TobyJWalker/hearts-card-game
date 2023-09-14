@@ -1,4 +1,5 @@
-from random import choice, shuffle
+from random import shuffle
+from Bot import make_choice
 from Player import Player
 from Card import Card
 import os
@@ -182,7 +183,7 @@ def is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken=T
     return True
 
 # function to handle a player's turn, returns the card played
-def play_turn(player, round, lead_suit, heart_broken, first_play):
+def play_turn(player, round, lead_suit, heart_broken, first_play, trick):
     chosen = ''
 
     # check if player is real or a bot
@@ -194,9 +195,8 @@ def play_turn(player, round, lead_suit, heart_broken, first_play):
     
     # make a choice for the bot
     else:
-        # keep generating a choice until valid
-        while not is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken, False):
-            chosen = choice(player.hand).face
+        # invoke bot AI
+        chosen = make_choice(player, round, lead_suit, heart_broken, first_play, trick)
     
     # check if heart is broken
     if chosen[-1] == 'H':
@@ -315,7 +315,7 @@ def main():
                 # handle first turn slightly differently to others
                 elif lead_index == current:
                     # play the turn, but check if heart is broken only on this first player
-                    played_card, _ = play_turn(players[current], round_num, 'DHCS', heart_broken, True)
+                    played_card, _ = play_turn(players[current], round_num, 'DHCS', heart_broken, True, current_trick)
 
                     # assign the lead suit and add card to trick
                     lead_suit = played_card.face[-1]
@@ -328,7 +328,7 @@ def main():
                 # play by normal rules for every other play
                 else:
                     # play the turn and add card to trick
-                    played_card, heart_broken = play_turn(players[current], round_num, lead_suit, heart_broken, False)
+                    played_card, heart_broken = play_turn(players[current], round_num, lead_suit, heart_broken, False, current_trick)
                     current_trick.append(played_card)
                     trick_players.append(players[current].name)
 
