@@ -32,12 +32,13 @@ def select_difficulty(players):
     difficulty = -1
 
     # keep asking user for a valid difficulty until one is entered
-    while difficulty not in range(2):
+    while difficulty not in range(3):
         try:
             difficulty = int(input('''Here are available difficulty options:
 
 0. Random
 1. Basic
+2. Intermediate
 
 Enter your choice here: '''))
         except:

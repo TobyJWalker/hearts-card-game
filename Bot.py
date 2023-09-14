@@ -6,10 +6,6 @@ from Card import Card
 VALID_VALS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 VALID_SUITS = ['D', 'H', 'C', 'S']
 
-# 0 difficulty is randomly generated
-# 1 difficulty will try and play the lowest cards to try and avoid taking tricks
-# 2 difficulty will try and play the highest card which is lower than the highest card in the trick, or highest card if no cards mathing the lead_suit is available
-
 # function to validate a card choice, returns True or False
 def is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken=True):
 
@@ -47,6 +43,10 @@ def is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken=T
     
     return True
 
+# 0 difficulty is randomly generated
+# 1 difficulty will try and play the lowest cards to try and avoid taking tricks
+# 2 difficulty will try and play the highest card which is lower than the highest card in the trick, or highest card if no cards mathing the lead_suit is available
+
 # make a decision based on bot difficulty and current game status
 def make_choice(bot, round, lead_suit, heart_broken, first_play, trick):
     
@@ -58,6 +58,32 @@ def make_choice(bot, round, lead_suit, heart_broken, first_play, trick):
         return choice(valid_cards).face
     
     # handle 1 difficulty
-    if bot.difficulty == 1:
+    elif bot.difficulty == 1:
         valid_cards.sort(key=lambda card: card.value)
         return valid_cards[0].face
+    
+    # handle 2 difficulty
+    elif bot.difficulty == 2:
+        valid_cards.sort(key=lambda card: card.value)
+
+        # check if cards are matching lead_suit when not first_play
+        if any(card.face[-1] not in lead_suit for card in valid_cards) and not first_play:
+            return valid_cards[-1].face # return the largest valued card if no lead_suit available
+
+        else:
+            # check if anyone has played a trick
+            if first_play:
+                return valid_cards[0].face # return smallest card if its first play of the round
+            
+            else:
+                # get the value of the highest valued card in trick
+                max_val = max([card.value for card in trick if card.face[-1] ==  lead_suit])
+
+                # get a list of all cards below the max value
+                optimal_cards = [card.face for card in valid_cards if card.value < max_val]
+
+                # if any optimal cards are available, return biggest, else return smallest available card
+                if optimal_cards != []:
+                    return optimal_cards[-1]
+                else:
+                    return valid_cards[0].face
