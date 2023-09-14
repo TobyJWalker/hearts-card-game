@@ -1,4 +1,5 @@
 from Card import Card
+from math import floor
 
 VAL_CONVERSION = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
 
@@ -72,4 +73,4 @@ Type --help for a list of commands
         self.difficulty = difficulty
     
     def get_trick_count(self):
-        return len(self.trick_hand) / 4
+        return floor(len(self.trick_hand) / 4)
