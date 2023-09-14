@@ -337,7 +337,7 @@ def main():
                     clear()
                     
                 display_trick(current_trick, trick_players)
-                time.sleep(3)
+                time.sleep(0.5)
             
             # calculate which card is the highest value and store the index
             highest_card_index = 0
