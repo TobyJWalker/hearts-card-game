@@ -59,6 +59,8 @@ def make_choice(bot, round, lead_suit, heart_broken, first_play, trick):
 
         # decide on queen of spades
         if any(card.face == 'QS' for card in valid_cards):
+            if len(valid_cards) != 1 and first_play:
+                valid_cards = [card for card in valid_cards if card.face != 'QS'] # remove queen of spades from valid cards if it doesn't have to play it on first turn
             if len(valid_cards) == 1 or lead_suit != 'S':
                 return 'QS' # return queen of spades if its the only available card or spades isn't the lead suit
             else:
