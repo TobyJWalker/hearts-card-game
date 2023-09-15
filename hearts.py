@@ -137,7 +137,7 @@ def display_trick(trick, trick_players):
 def is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken=True, show_output=True):
 
     # check if a command has been entered first
-    if chosen[:2] == '--':
+    if chosen[:1] == '-':
         return chosen
     
     # check if choice exists
@@ -213,38 +213,38 @@ def run_command(cmd, players):
         input('''
 Available commands are:
 
---tricks      : Displays a list of players and how many tricks they have taken
---scores      : Displays a leaderboard of the current scores
---hand        : Displays your hand
---shootthemoon: Adds all hearts and queen of spades to trick hand (Debugging)
+--tricks        -t  : Displays a list of players and how many tricks they have taken
+--scores        -s  : Displays a leaderboard of the current scores
+--hand          -h  : Displays your hand
+--shootthemoon  -stm: Adds all hearts and queen of spades to trick hand (Debugging)
 
 Press Enter to continue.
 ''')
     
     # scores command
-    elif cmd == '--scores':
+    elif cmd == '--scores' or cmd == '-s':
         display_game_scores(players)
     
     # tricks command
-    elif cmd == '--tricks':
+    elif cmd == '--tricks' or cmd == '-t':
         input(f'''\n
 Here's the current trick distribution:
 
-{players[0].name}{' ' * (4 - len(players[0].name))}: {players[0].get_trick_count()})
-{players[1].name}{' ' * (4 - len(players[1].name))}: {players[1].get_trick_count()})
-{players[2].name}{' ' * (4 - len(players[2].name))}: {players[2].get_trick_count()})
-{players[3].name}{' ' * (4 - len(players[3].name))}: {players[3].get_trick_count()})
+{players[0].name}{' ' * (4 - len(players[0].name))}: {players[0].tricks_won}
+{players[1].name}{' ' * (4 - len(players[1].name))}: {players[1].tricks_won}
+{players[2].name}{' ' * (4 - len(players[2].name))}: {players[2].tricks_won}
+{players[3].name}{' ' * (4 - len(players[3].name))}: {players[3].tricks_won}
 
 Press Enter to continue.\n''')
     
     # hand command
-    elif cmd == '--hand':
+    elif cmd == '--hand' or cmd == '-H':
         for player in players:
             if not player.is_bot:
                 player.display_hand()
     
     # shootthemoon command
-    elif cmd == '--shootthemoon':
+    elif cmd == '--shootthemoon' or cmd == '-stm':
         for player in players:
             if not player.is_bot:
                 for i in range(2, 15):
@@ -261,13 +261,16 @@ def play_turn(player, players, round, lead_suit, heart_broken, first_play, trick
     # check if player is real or a bot
     if not player.is_bot:
         # keep asking for a choice until valid
-        while is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken) == False or chosen[:2] == '--':
+        while is_valid_choice(chosen, player, round, lead_suit, first_play, heart_broken) == False or '-' in chosen:
             # handle if a command has been entered
-            if chosen[:2] == '--':
+            if '-' in chosen:
                 run_command(chosen.lower(), players)
 
             # ask player to choose a card, set to upper for case insensitivity
-            chosen = input("Enter a card to play: ").upper()
+            if first_play:
+                chosen = input("Enter a card to lead: ").upper()
+            else:
+                chosen = input("Enter a card to play: ").upper()
     
     # make a choice for the bot
     else:
@@ -315,6 +318,10 @@ def get_winners(players):
     # loop through players and return a list of all players with min_score
     return [player for player in players if player.points == min_score]
 
+# reset everyone's trick counter between rounds
+def reset_trick_counters(players):
+    for player in players:
+        player.tricks_won = 0
 
 # main game function
 def main():
@@ -335,9 +342,10 @@ def main():
         deck = create_deck()
         deal_deck(players, deck)
 
-        # set/reset heart_broken variable and round_num
+        # set/reset heart_broken variable, round_num and players tricks won count
         heart_broken = False
         round_num = 1
+        reset_trick_counters(players)
 
         # another while loop until users deck is empty
         while len(players[0].hand) != 0:
@@ -410,8 +418,9 @@ def main():
             # give the trick to the player with the highest value in the lead suit
             players[player_order[highest_card_index]].add_trick_cards(current_trick)
 
-            # output a message to display who won the trick
+            # output a message to display who won the trick and add to their trick counter
             input(f"\n{players[player_order[highest_card_index]].name} won this trick. (Enter to continue)\n")
+            players[player_order[highest_card_index]].tricks_won += 1
 
             clear()
 

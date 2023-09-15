@@ -13,6 +13,7 @@ class Player():
         self.name = name
         self.is_bot = is_bot
         self.difficulty = 0
+        self.tricks_won = 0
     
     # add a card to the hand
     def add_card_to_hand(self, card):
@@ -71,6 +72,3 @@ Type --help for a list of commands
     # set a bots difficulty
     def set_difficulty(self, difficulty):
         self.difficulty = difficulty
-    
-    def get_trick_count(self):
-        return floor(len(self.trick_hand) / 4)
