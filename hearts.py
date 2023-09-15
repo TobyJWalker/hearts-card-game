@@ -329,6 +329,11 @@ def reset_trick_counters(players):
     for player in players:
         player.tricks_won = 0
 
+# create a log folder if it doesn't exist
+def create_log_folder():
+    if not os.path.isdir('logs'):
+        os.mkdir('logs')
+
 # main game function
 def main():
     welcome()
@@ -465,4 +470,5 @@ def main():
 
 
 if __name__ == "__main__":
+    create_log_folder()
     main()
