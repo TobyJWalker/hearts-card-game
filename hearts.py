@@ -2,6 +2,7 @@ from random import shuffle
 from Bot import make_choice
 from Player import Player
 from Card import Card
+from datetime import datetime
 import os
 import time
 
@@ -48,6 +49,11 @@ Enter your choice here: '''))
     # loop through players and assign the chosen difficulty
     for player in players:
         player.set_difficulty(difficulty)
+
+# log function
+def log_event(event, file):
+    with open(file, 'a') as f:
+        f.write(f"[{datetime.now().strftime('%H:%M:%S')}] {event}\n")
 
 # function to create the deck
 def create_deck():
@@ -328,6 +334,11 @@ def main():
     welcome()
     clear()
 
+    # get the current date and time and create a log file name with it
+    now = datetime.now()
+    dt_string = now.strftime('%d-%m-%Y %H:%M')
+    log_file = f'logs/{dt_string}.txt'
+
     # create some players and store in a list. 3 of them are bots
     players = [Player('You', False), Player('Bot 1', True), Player('Bot 2', True), Player('Bot 3', True)]
 
@@ -376,9 +387,11 @@ def main():
                             current_trick.append(card)
                             trick_players.append(players[current].name)
                             players[current].hand.remove(card)
+                            played_card = card
                     
                     # set the lead suit to clubs
                     lead_suit = 'C'
+                    clear()
                 
                 # handle first turn slightly differently to others
                 elif lead_index == current:
@@ -390,7 +403,6 @@ def main():
                     current_trick.append(played_card)
                     trick_players.append(players[current].name)
 
-                    # display a message in readable, clear format using VAL_CONVERSION to translate card value to proper format
                     clear()
                 
                 # play by normal rules for every other play
@@ -400,9 +412,10 @@ def main():
                     current_trick.append(played_card)
                     trick_players.append(players[current].name)
 
-                    # display a message in readable, clear format using VAL_CONVERSION to translate card value to proper format
                     clear()
-                    
+                
+                # log the move, display the trick and wait a moment
+                log_event(f'{trick_players[-1]} played {VAL_CONVERSION[played_card.value-2]} of {played_card.suit}', log_file)   
                 display_trick(current_trick, trick_players)
                 time.sleep(0.5)
             
@@ -421,6 +434,7 @@ def main():
             # output a message to display who won the trick and add to their trick counter
             input(f"\n{players[player_order[highest_card_index]].name} won this trick. (Enter to continue)\n")
             players[player_order[highest_card_index]].tricks_won += 1
+            log_event(f"{players[player_order[highest_card_index]].name} won this trick.\n", log_file)
 
             clear()
 
@@ -438,6 +452,7 @@ def main():
     # if one winner, print win message
     if len(winners) == 1:
         input(f'\n\n{winners[0].name.upper()} WON!\n\n')
+        log_event(f'\n\n{winners[0].name.upper()} WON!\n\n', log_file)
     
     # if multiple winners, print draw message
     elif len(winners) > 1:
@@ -445,6 +460,7 @@ def main():
         for player in winners:
             print(f"{player.name.upper()}")
         print("\n")
+        log_event('\n\nITS A DRAW\n', log_file)
 
 
 
