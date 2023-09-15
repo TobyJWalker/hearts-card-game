@@ -303,8 +303,9 @@ def calculate_game_scores(players):
             if player.has_queen_spades():
                 player.points += 13
             
-            # reset the trick hand for the next game
-            player.reset_trick_hand()
+    # reset trick hand of every player
+    for player in players:
+        player.reset_trick_hand()
 
 # find the player with the lowest points
 def get_winners(players):

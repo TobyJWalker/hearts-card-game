@@ -33,7 +33,7 @@ class Player():
 
     # reset the trick list
     def reset_trick_hand(self):
-        self.trick_hand = []
+        self.trick_hand.clear()
     
     # get trick heart count
     def get_trick_heart_count(self):
